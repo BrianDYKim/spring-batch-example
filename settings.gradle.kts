@@ -20,4 +20,4 @@ pluginManagement {
 
 include("common")
 
-include("chapter1")
+include("chapter1", "chapter3")
