@@ -1,4 +1,4 @@
-package me.example.chapter1.config
+package me.example.chapter1.config.hello
 
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder

@@ -1,4 +1,4 @@
-package me.example.chapter1.config
+package me.example.chapter1.config.hello
 
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.StepContribution
