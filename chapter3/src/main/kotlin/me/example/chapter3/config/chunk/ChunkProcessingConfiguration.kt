@@ -4,6 +4,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.configuration.annotation.JobScope
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.support.RunIdIncrementer
@@ -15,10 +17,12 @@ import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
 import org.springframework.batch.repeat.RepeatStatus
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.util.StringUtils
 
 /**
  * @author Doyeop Kim
@@ -43,6 +47,7 @@ class ChunkProcessingConfiguration(
         return CommandLineRunner {
             val jobParameters = JobParametersBuilder()
                 .addLong("time", System.currentTimeMillis())
+                .addString("chunkSize", "20")
                 .toJobParameters()
 
             jobLauncher.run(chunkProcessingJob(), jobParameters)
@@ -54,27 +59,36 @@ class ChunkProcessingConfiguration(
         return JobBuilder(JOB_NAME, jobRepository)
             .incrementer(RunIdIncrementer())
             .start(taskBaseStep())
-            .next(chunkBaseStep())
+            .next(chunkBaseStep(null)) // JobScope에서 JobParameter를 읽어와서 초기화함
             .build()
     }
 
     private fun taskBaseStep(): Step {
         return StepBuilder(TASK_STEP_NAME, jobRepository)
-            .tasklet(tasklet(), transactionManager)
+            .tasklet(tasklet(null), transactionManager)
             .build()
     }
 
-    private fun tasklet(): Tasklet = Tasklet { contribution, chunkContext ->
-        val items = getItems()
+    @Bean
+    @StepScope
+    fun tasklet(@Value("#{jobParameters['chunkSize']}") chunkSize: String?): Tasklet =
+        Tasklet { contribution, chunkContext ->
+            val items = getItems()
+            val inputChunkSize = chunkSize?.let { Integer.parseInt(chunkSize) } ?: 10
 
-        logger.info("task item size : {}", items.size)
+            logger.info("task item size : {}, chunk size : {}", items.size, inputChunkSize)
 
-        return@Tasklet RepeatStatus.FINISHED
-    }
+            return@Tasklet RepeatStatus.FINISHED
+        }
 
-    private fun chunkBaseStep(): Step {
+    @Bean
+    @JobScope // Scope에 의해서 Job의 라이프사이클을 따르도록 설정이 되기 때문에 해당 step은 쓰레드 세이프하게 동작함
+    fun chunkBaseStep(@Value("#{jobParameters['chunkSize']}") chunkSize: String?): Step {
+        // JobParameter의 chunkSize 키를 읽어와서 Integer로 파싱
+        val inputChunkSize = chunkSize?.let { Integer.parseInt(chunkSize) } ?: 10
+
         return StepBuilder(CHUNK_STEP_NAME, jobRepository)
-            .chunk<String, String>(10, transactionManager)
+            .chunk<String, String>(inputChunkSize, transactionManager)
             .reader(itemReader())
             .processor(itemProcessor())
             .writer(itemWriter())
