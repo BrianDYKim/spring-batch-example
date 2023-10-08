@@ -1,4 +1,4 @@
-package me.example.chapter3.config.custom
+package me.example.chapter3.custom.config
 
 import me.example.chapter3.custom.model.Person
 import me.example.chapter3.custom.reader.CustomItemReader
@@ -16,7 +16,6 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
-import java.util.ArrayList
 
 /**
  * @author Doyeop Kim

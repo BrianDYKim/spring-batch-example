@@ -1,4 +1,4 @@
-package me.example.chapter3.config.chunk
+package me.example.chapter3.chunk.config
 
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
@@ -22,7 +22,6 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.util.StringUtils
 
 /**
  * @author Doyeop Kim
