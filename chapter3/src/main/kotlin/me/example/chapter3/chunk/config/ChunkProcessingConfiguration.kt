@@ -1,5 +1,6 @@
 package me.example.chapter3.chunk.config
 
+import me.example.chapter3.listener.SavePersonListener
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder
@@ -58,6 +59,8 @@ class ChunkProcessingConfiguration(
         return JobBuilder(JOB_NAME, jobRepository)
             .incrementer(RunIdIncrementer())
             .start(taskBaseStep())
+            .listener(SavePersonListener.SavePersonJobExecutionListener())
+            .listener(SavePersonListener.SavePersonAnnotationJobExecutionListener())
             .next(chunkBaseStep(null)) // JobScope에서 JobParameter를 읽어와서 초기화함
             .build()
     }
@@ -88,6 +91,7 @@ class ChunkProcessingConfiguration(
 
         return StepBuilder(CHUNK_STEP_NAME, jobRepository)
             .chunk<String, String>(inputChunkSize, transactionManager)
+            .listener(SavePersonListener.SavePersoStepExecutionListener())
             .reader(itemReader())
             .processor(itemProcessor())
             .writer(itemWriter())
