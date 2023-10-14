@@ -1,4 +1,4 @@
-package me.example.chapter3.jpa.model
+package me.example.chapter3.jpaReader.model
 
 import jakarta.persistence.*
 
