@@ -19,6 +19,14 @@ class Person(
     @get:Column(name = "address", nullable = false)
     var address: String = "",
 ) {
+    private val unknownName = "UNKNOWN"
+
     // Secondary constructor
     constructor(name: String, age: String, address: String) : this(0L, name, age, address)
+
+    fun checkNotEmptyName(): Boolean = this.name.isNotEmpty()
+
+    fun unknownName(): Person {
+        return this.apply { this.name = this.unknownName }
+    }
 }

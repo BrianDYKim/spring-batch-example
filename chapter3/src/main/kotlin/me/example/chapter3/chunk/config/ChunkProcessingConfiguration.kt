@@ -95,6 +95,9 @@ class ChunkProcessingConfiguration(
             .reader(itemReader())
             .processor(itemProcessor())
             .writer(itemWriter())
+            .faultTolerant()
+            .skip(Exception::class.java)
+            .skipLimit(3)
             .build()
     }
 
